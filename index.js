@@ -1,63 +1,54 @@
-const http = require('http')
-const fs = require('fs')
-const PORT = 8050
-
-defineLog = (req) => {
-    const logEntry = `[${new Date().toISOString()}] ${req.method} ${req.url}\n`
-    fs.appendFile('log.txt', logEntry, (err) => {
-        if (err) {
-            console.error("Failed to write log:", err)
+const server = Bun.serve({
+    port: 8050,
+    fetch(req) {
+        const url = new URL(req.url);
+        switch (url.pathname) {
+            case "/": 
+                return new Response("Welcome to BarterX");
+            case "/products": 
+                return new Response("Here are the products up for sale in BarterX");
+            case "/login": 
+                return new Response("Login to the BarterX");
+            case "/signup": 
+                return new Response("Sign up to the BarterX");
+            case "/profile": 
+                return new Response("Trader Profile");
+            case "/cart": 
+                return new Response("Your Shopping Cart is here");
+            case "/checkout": 
+                return new Response("Let's start Shipping");
+            case "/orders": 
+                return new Response("Your Orders are here");
+            case "/api/products":
+                const apiData = [
+                    { "id": 1, "name": "Used Laptop", "price": 300 },
+                    { "id": 2, "name": "Second-hand Bicycle", "price": 50 }
+                ];
+                return new Response(JSON.stringify(apiData));
+            case "/categories": 
+                return new Response("Browse Categories");
+            case "/chat": 
+                return new Response("Your Chat with fellow Traders");
+            case "/contact": 
+                return new Response("Contact Us at");
+            case "/about": 
+                return new Response(Bun.file("./about.html"));
+            case "/styles.css": 
+                return new Response(Bun.file("./styles.css"), { headers: { "Content-Type": "text/css" } });
+            case "/logo.png": 
+                return new Response(Bun.file("./logo.png"), { headers: { "Content-Type": "image/png" } });
+            case "/log": 
+                return new Response(Bun.file("./log.txt"), { headers: { "Content-Type": "text/plain" } });
+            default:
+                return Response.json(
+                    { error: "Page not found", statusCode: 404 },
+                    {
+                        status: 404,
+                        headers: { "Content-Type": "application/json" }
+                    }
+                );
         }
-    })
-}
+    },
+});
 
-const server = http.createServer((req, res) => {
-    defineLog(req)
-
-    res.setHeader('Content-Type', 'text/plain')
-    switch (req.url) {
-        case '/':
-            res.end('Welcome to the BarterX')
-            break
-        case '/products':
-            res.end('Here are the products up for Sale in BarterX')
-            break
-        case '/login':
-            res.end('Login to the BarterX')
-            break
-        case '/signup':
-            res.end('Sign up to the BarterX')
-            break
-        case '/profile':
-            res.end('Trader Profile')
-            break
-        case '/cart':
-            res.end('Your Shopping Cart is here')
-            break
-        case '/checkout':
-            res.end('Lets\' start shipping')
-            break
-        case '/orders':
-            res.end('Your Orders are here')
-            break
-        case '/categories':
-            res.end('Browse Categories')
-            break
-        case '/chat':
-            res.end('Your Chat with fellow Traders')
-            break
-        case '/contact':
-            res.end('Contact Us at')
-            break
-        case '/about':
-            res.end('The modern approach to trading our commodities')
-            break
-        default:
-            res.end('Page not found')
-            break
-    }
-})
-
-server.listen(PORT, () => {
-    console.log(`Server initiated on port ${PORT}...`)
-})
+console.log(`Server listening on http://localhost:${server.port}`);
